@@ -1,11 +1,23 @@
 use route_modules::*;
 
+#[macro_use]
+extern crate rocket;
+
 #[route_module]
 mod articles {
-    pub fn new() {
+    #[get("/")]
+    pub fn all() {
+    }
+
+    #[get("/<id>")]
+    pub fn with_id(id: &str) {
+    }
+
+    pub fn no_route() {
+
     }
 }
 
 fn main() {
-    print_routes();
+    __print_routes__();
 }
