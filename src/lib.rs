@@ -2,8 +2,12 @@
 extern crate syn;
 
 use proc_macro::TokenStream;
+use proc_macro2::Span;
 use quote::{quote};
-use syn::{ItemMod, Item::Fn, ItemFn, Ident, Item};
+use syn::{ItemMod, Item::Fn, ItemFn, Ident, Item, ItemConst, ExprArray, ExprLit, LitStr, Expr};
+use syn::Lit::Str;
+use syn::punctuated::Punctuated;
+use syn::token::Comma;
 
 #[proc_macro]
 pub fn module(input: TokenStream) -> TokenStream {
@@ -21,23 +25,29 @@ pub fn route_module(_metadata: TokenStream, input: TokenStream) -> TokenStream {
     let routes = content.1.iter()
         .filter_map(|item| if let Fn(func) = item { Some(func) } else { None })
         .filter(|&func| is_rocket_route(func))
-        .map(|route| format!("{}\n", route.sig.ident))
-        .collect::<String>();
+        .map(|route| route.sig.ident.to_string())
+        .collect::<Vec<_>>();
+
+    let routes_len = routes.len();
+    let mut elems = Punctuated::new();
+
+    for route in routes {
+        let lit = Str(LitStr::new(route.as_str(), Span::call_site()));
+        elems.push(Expr::from(ExprLit { attrs: vec![], lit }));
+    }
+
+    let route_literal = ExprArray {
+        attrs: vec![],
+        bracket_token: Default::default(),
+        elems,
+    };
 
     let fn_routes = TokenStream::from(quote! {
-        pub fn __fn_routes__() -> Vec<String> {
-            #routes
-                .split('\n')
-                .collect::<Vec<_>>()
-                .iter()
-                .map(|e| e.to_string())
-                .filter(|s| !s.is_empty())
-                .collect()
-        }
+        pub const __ROUTES: [&str; #routes_len] = #route_literal;
     });
 
     let mut items = content.1.clone();
-    items.push(Item::from(parse_macro_input!(fn_routes as ItemFn)));
+    items.push(Item::from(parse_macro_input!(fn_routes as ItemConst)));
 
     let module = ItemMod {
         content: Some((content.0.clone(), items)),
