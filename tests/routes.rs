@@ -4,8 +4,6 @@ extern crate route_modules;
 #[macro_use]
 extern crate rocket;
 
-use rocket::Route;
-
 #[route_module]
 mod articles {
     #[get("/")]

@@ -1,18 +1,13 @@
 #[macro_use]
 extern crate syn;
 
-use std::str::FromStr;
 use proc_macro::TokenStream;
-use proc_macro2::Span;
 use quote::{quote};
-use rocket::Route;
-use syn::{ItemMod, Item::Fn, ItemFn, Ident, Result, LitStr, Item};
-use syn::parse::{Parse, ParseStream};
-use syn::token::Comma;
+use syn::{ItemMod, Item::Fn, ItemFn, Ident, Item};
 
 #[proc_macro]
 pub fn module(input: TokenStream) -> TokenStream {
-    let routes = parse_macro_input!(input as Ident);
+    let _routes = parse_macro_input!(input as Ident);
 
     todo!("Retrieve method names from module...")
 }
