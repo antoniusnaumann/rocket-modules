@@ -1,5 +1,6 @@
 # Rocket Modules
 [![Build Status](https://github.com/antoniusnaumann/rocket-modules/actions/workflows/build.yml/badge.svg)](https://github.com/antoniusnaumann/rocket-modules/actions)
+[![Publish Status](https://github.com/antoniusnaumann/rocket-modules/actions/workflows/publish.yml/badge.svg)](https://github.com/antoniusnaumann/rocket-modules/actions)
 [![Language: Rust](https://img.shields.io/badge/Language-Rust-F46623)](https://www.rust-lang.org)
 [![Crates.io Version](https://img.shields.io/crates/v/rocket_modules.svg)](https://crates.io/crates/rocket_modules)
 
