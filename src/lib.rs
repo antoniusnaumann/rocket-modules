@@ -1,3 +1,5 @@
+//! A small crate that adds macros to conveniently organize [Rocket](rocket.rs) route handlers in modules.
+
 #[macro_use]
 extern crate syn;
 
@@ -7,7 +9,54 @@ use syn::{ExprMethodCall, ItemMod, Item::Fn, ItemFn, Item, ExprArray, Path};
 use syn::Expr::MethodCall;
 use syn::punctuated::Punctuated;
 
-
+/// Generates a [`Vec<rocket::Route>`](rocket::Route) which contains all functions marked with a [rocket route attribute](rocket::get). The module has to be marked with [`#[route_module]`](macro@route_module).
+///
+/// # Examples
+/// Comparison with rocket's [`routes!`](rocket::routes) macro:
+/// ```
+/// #[route_module]
+/// mod articles {
+///     #[get("/")]
+///     pub fn all_articles() { /* ... */ }
+///
+///     #[get("/<_id>")]
+///     pub fn get_article(_id: &str) { /* ... */ }
+///
+///     #[post("/<_id>")]
+///     pub fn post_article(_id: &str) { /* ... */ }
+///
+///     #[route(PATCH, uri = "/<_id>")]
+///     pub fn patch_article(_id: &str) { /* ... */ }
+/// }
+///
+/// let routes = routes![articles::all_articles, articles::get_article, articles::post_article, articles::patch_article];
+/// let module = module!(articles);
+/// assert_routes_eq!(routes, module);
+/// ```
+///
+/// # Usage
+/// ```
+/// #[route_module]
+/// mod articles {
+///     #[get("/")]
+///     pub fn all_articles() { /* ... */ }
+///
+///     #[get("/<_id>")]
+///     pub fn get_article(_id: &str) { /* ... */ }
+///
+///     #[post("/<_id>")]
+///     pub fn post_article(_id: &str) { /* ... */ }
+///
+///     #[route(PATCH, uri = "/<_id>")]
+///     pub fn patch_article(_id: &str) { /* ... */ }
+/// }
+///
+/// #[launch]
+/// fn rocket() -> _ {
+///     rocket::build()
+///       .mount("/articles", module!(articles))
+/// }
+/// ```
 #[proc_macro]
 pub fn module(input: TokenStream) -> TokenStream {
     let path = parse_macro_input!(input as Path);
@@ -16,6 +65,34 @@ pub fn module(input: TokenStream) -> TokenStream {
     TokenStream::from(quote!(#module::__routes()))
 }
 
+/// Marks a module as route module which allows it to be passed as an argument to the [`module!`] macro.
+///
+/// # Usage
+/// ```
+/// #[route_module]
+/// mod articles {
+///     #[get("/")]
+///     pub fn all_articles() { /* ... */ }
+///
+///     #[get("/<_id>")]
+///     pub fn get_article(_id: &str) { /* ... */ }
+///
+///     #[post("/<_id>")]
+///     pub fn post_article(_id: &str) { /* ... */ }
+///
+///     #[route(PATCH, uri = "/<_id>")]
+///     pub fn patch_article(_id: &str) { /* ... */ }
+/// }
+/// ```
+///
+/// # Panics
+/// This macro can only be applied to complete module definitions (`mod my_module { ... }`).
+///
+/// Trying to add this attribute to a module declaration without a body will result this macro to panic at compile-time.
+///
+/// # Code generation
+/// This macro generates `pub fn __routes() -> [rocket::Route; #routes_len] { /* ... */ }` in your module.
+/// Do not use a function with this name in your module when applying the [macro@route_module] attribute as this will lead to name clashes.
 #[proc_macro_attribute]
 pub fn route_module(_metadata: TokenStream, input: TokenStream) -> TokenStream {
     let module = parse_macro_input!(input as ItemMod);
@@ -44,6 +121,7 @@ pub fn route_module(_metadata: TokenStream, input: TokenStream) -> TokenStream {
     };
 
     let fn_routes = TokenStream::from(quote! {
+        #[doc(hidden)]
         pub fn __routes() -> [rocket::Route; #routes_len] {
             #route_literal
         }

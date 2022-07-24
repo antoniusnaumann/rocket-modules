@@ -4,6 +4,15 @@ extern crate route_modules;
 #[macro_use]
 extern crate rocket;
 
+fn str(route: &rocket::Route) -> String { route.name.as_ref().unwrap().to_string() }
+macro_rules! assert_routes_eq {
+    ($routes: ident, $module: ident) => {
+        // Make sure all routes generated with routes! macro are present in module! macro output as well
+        assert!($routes.iter().all(|r| $module.iter().any(|other| str(r) == str(other))));
+        // Make sure all routes generated with module! would be generated when using routes! macro
+    };
+}
+
 #[route_module]
 mod articles {
     #[get("/")]
@@ -45,13 +54,5 @@ fn test_module_macro() {
     let module = module!(articles);
     assert_eq!(routes.len(), module.len());
 
-    // Make sure all routes generated with routes! macro are present in module! macro output as well
-    assert!(routes.iter().all(|r| module.iter().any(|other| str(r) == str(other))));
-
-    // Make sure all routes generated with module! would be generated when using routes! macro
-    assert!(module.iter().all(|r| routes.iter().any(|other| str(r) == str(other))));
-}
-
-fn str(route: &rocket::Route) -> String {
-    route.name.as_ref().unwrap().to_string()
+    assert_routes_eq!(routes, module);
 }
