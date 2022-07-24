@@ -1,27 +1,44 @@
 #[macro_use]
 extern crate route_modules;
 
+#[macro_use]
+extern crate rocket;
+
+use rocket::Route;
+
 #[route_module]
 mod articles {
     #[get("/")]
-    pub fn all() {}
+    pub fn _all() {}
 
-    #[get("/<id>")]
-    pub fn get_with_id(id: &str) {}
+    #[get("/<_id>")]
+    pub fn _get_with_id(_id: &str) {}
 
-    #[post("/<id>")]
-    pub fn post_with_id(id: &str) {}
+    #[post("/<_id>")]
+    pub fn _post_with_id(_id: &str) {}
 
-    #[route(PATCH, "/<id>")]
-    pub fn patch_with_id(id: &str) {}
+    #[route(PATCH, uri = "/<_id>")]
+    pub fn _patch_with_id(_id: &str) {}
 
-    pub fn no_route() {}
+    pub fn _no_route() -> bool { true }
 
-    #[no_route]
-    pub fn no_route_too() {}
+    pub fn _no_route_too() {}
 }
 
 #[test]
 fn test_route_number() {
-    assert_eq!(__routes__().len(),  4)
+    assert_eq!(articles::__fn_routes__().len(),  4);
+    assert_eq!(articles::_no_route(), true);
+}
+
+#[test]
+fn test_generated_route_fn() {
+    assert!(articles::__fn_routes__().iter().any(|s| s == "_all"));
+    assert!(articles::__fn_routes__().iter().any(|s| s == "_patch_with_id"));
+    assert!(!articles::__fn_routes__().iter().any(|s| s == "_no_route"));
+}
+
+#[test]
+fn test_module_macro() {
+
 }
