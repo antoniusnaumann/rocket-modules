@@ -2,18 +2,18 @@
 extern crate syn;
 
 use proc_macro::TokenStream;
-use proc_macro2::Span;
 use quote::{quote};
-use syn::{ItemMod, Item::Fn, ItemFn, Ident, Item, ItemConst, ExprArray, ExprLit, LitStr, Expr};
-use syn::Lit::Str;
+use syn::{ExprMethodCall, ItemMod, Item::Fn, ItemFn, Item, ExprArray, Expr, Path};
+use syn::Expr::MethodCall;
 use syn::punctuated::Punctuated;
-use syn::token::Comma;
+
 
 #[proc_macro]
 pub fn module(input: TokenStream) -> TokenStream {
-    let _routes = parse_macro_input!(input as Ident);
+    let path = parse_macro_input!(input as Path);
+    let module = &path.segments.last().unwrap().ident;
 
-    todo!("Retrieve method names from module...")
+    TokenStream::from(quote!(#module::__routes()))
 }
 
 #[proc_macro_attribute]
@@ -25,15 +25,16 @@ pub fn route_module(_metadata: TokenStream, input: TokenStream) -> TokenStream {
     let routes = content.1.iter()
         .filter_map(|item| if let Fn(func) = item { Some(func) } else { None })
         .filter(|&func| is_rocket_route(func))
-        .map(|route| route.sig.ident.to_string())
+        .map(|route| route.sig.ident.clone())
         .collect::<Vec<_>>();
 
     let routes_len = routes.len();
     let mut elems = Punctuated::new();
 
     for route in routes {
-        let lit = Str(LitStr::new(route.as_str(), Span::call_site()));
-        elems.push(Expr::from(ExprLit { attrs: vec![], lit }));
+        let route_expr = TokenStream::from(quote!(#route { }.into_route()));
+        let call = MethodCall(parse_macro_input!(route_expr as ExprMethodCall));
+        elems.push(Expr::from( call ));
     }
 
     let route_literal = ExprArray {
@@ -43,11 +44,13 @@ pub fn route_module(_metadata: TokenStream, input: TokenStream) -> TokenStream {
     };
 
     let fn_routes = TokenStream::from(quote! {
-        pub const __ROUTES: [&str; #routes_len] = #route_literal;
+        pub fn __routes() -> [rocket::Route; #routes_len] {
+            #route_literal
+        }
     });
 
     let mut items = content.1.clone();
-    items.push(Item::from(parse_macro_input!(fn_routes as ItemConst)));
+    items.push(Item::from(parse_macro_input!(fn_routes as ItemFn)));
 
     let module = ItemMod {
         content: Some((content.0.clone(), items)),
