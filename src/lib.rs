@@ -10,6 +10,7 @@
 //! [dependencies]
 //! rocket = "0.5.0-rc.2"
 //! rocket_modules = "0.1.0"
+//! ```
 
 #[macro_use]
 extern crate syn;
