@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate route_modules;
+extern crate rocket_modules;
 
 #[macro_use]
 extern crate rocket;
@@ -32,6 +32,17 @@ mod articles {
     pub fn no_route_too() {}
 }
 
+mod nested {
+    #[route_module]
+    pub mod authors {
+        #[get("/")]
+        pub fn _all() {}
+
+        #[post("/")]
+        pub fn _new() {}
+    }
+}
+
 #[test]
 fn test_route_number() {
     assert_eq!(articles::__routes().len(),  4);
@@ -54,5 +65,13 @@ fn test_module_macro() {
     let module = module!(articles);
     assert_eq!(routes.len(), module.len());
 
+    assert_routes_eq!(routes, module);
+}
+
+#[test]
+fn test_nested_module() {
+    let routes = routes![nested::authors::_all, nested::authors::_new];
+    let module = module!(nested::authors);
+    assert_eq!(module.len(), 2);
     assert_routes_eq!(routes, module);
 }

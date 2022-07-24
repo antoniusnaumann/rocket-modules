@@ -1,4 +1,15 @@
 //! A small crate that adds macros to conveniently organize [Rocket](rocket.rs) route handlers in modules.
+//!
+//! This crate is not directly associated with the rocket project, although it is built upon it.
+//!
+//! # Usage
+//! To use `rocket_modules`, add it to your dependencies in your `Cargo.toml`.
+//!
+//! You should also add a dependency to `rocket` (version `0.5.0-rc2` or higher) if not already present:
+//! ```
+//! [dependencies]
+//! rocket = "0.5.0-rc.2"
+//! rocket_modules = "0.1.0"
 
 #[macro_use]
 extern crate syn;
@@ -60,9 +71,8 @@ use syn::punctuated::Punctuated;
 #[proc_macro]
 pub fn module(input: TokenStream) -> TokenStream {
     let path = parse_macro_input!(input as Path);
-    let module = &path.segments.last().unwrap().ident;
 
-    TokenStream::from(quote!(#module::__routes()))
+    TokenStream::from(quote!(#path::__routes()))
 }
 
 /// Marks a module as route module which allows it to be passed as an argument to the [`module!`] macro.
