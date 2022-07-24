@@ -6,7 +6,8 @@ license = "MIT OR Apache-2.0"
 description = "A small crate that adds macros to conveniently organize [Rocket](https://rocket.rs) route handlers in modules."
 repository = "https://github.com/antoniusnaumann/rocket-modules"
 authors = ["Antonius Naumann <git@antonius.dev>"]
-keywords = ["rocket", "server", "web", "utility", "macro", "proc_macro", "code_gen"]
+keywords = ["rocket", "server", "web", "utility", "macro"]
+categories = ["web-programming", "web-programming::http-server", "rust-patterns"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
