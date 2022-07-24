@@ -3,7 +3,7 @@ extern crate syn;
 
 use proc_macro::TokenStream;
 use quote::{quote};
-use syn::{ExprMethodCall, ItemMod, Item::Fn, ItemFn, Item, ExprArray, Expr, Path};
+use syn::{ExprMethodCall, ItemMod, Item::Fn, ItemFn, Item, ExprArray, Path};
 use syn::Expr::MethodCall;
 use syn::punctuated::Punctuated;
 
@@ -34,7 +34,7 @@ pub fn route_module(_metadata: TokenStream, input: TokenStream) -> TokenStream {
     for route in routes {
         let route_expr = TokenStream::from(quote!(#route { }.into_route()));
         let call = MethodCall(parse_macro_input!(route_expr as ExprMethodCall));
-        elems.push(Expr::from( call ));
+        elems.push(call);
     }
 
     let route_literal = ExprArray {
@@ -53,7 +53,7 @@ pub fn route_module(_metadata: TokenStream, input: TokenStream) -> TokenStream {
     items.push(Item::from(parse_macro_input!(fn_routes as ItemFn)));
 
     let module = ItemMod {
-        content: Some((content.0.clone(), items)),
+        content: Some((content.0, items)),
         ..module
     };
 
@@ -67,7 +67,7 @@ fn is_rocket_route(func: &ItemFn) -> bool {
             attr.path.segments.iter()
             .any(|s|
                 ROCKET_ROUTE_KEYWORDS.iter()
-                .any(|&keyword| keyword == s.ident.to_string())) )
+                .any(|&keyword| s.ident == keyword)))
 }
 
 const ROCKET_ROUTE_KEYWORDS: [&str; 8] = [
