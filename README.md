@@ -1,5 +1,5 @@
-# Route Modules
-A small crate that adds macros to conveniently organize [Rocket](rocket.rs) route handlers in modules.
+# Rocket Modules
+A small crate that adds macros to conveniently organize [Rocket](https://rocket.rs) route handlers in modules. This crate is not directly associated with the rocket project, although it is built upon it.
 
 ## Example
 Instead of explicitly stating all routes that should be mounted...
@@ -42,4 +42,4 @@ fn rocket() -> _ {
 ## Installation
 **TODO:** This crate has yet to uploaded to crates.io. Will happen soon! :)
 
-*Note: Compatability of this crate was testes with Rocket version "0.5.0-rc.2", it may or may not work with previous version.*
+*Note: Compatability of this crate was tested with Rocket version "0.5.0-rc.2", it may or may not work with previous versions.*
