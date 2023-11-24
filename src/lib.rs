@@ -5,21 +5,21 @@
 //! # Usage
 //! To use `rocket_modules`, add it to your dependencies in your `Cargo.toml`.
 //!
-//! You should also add a dependency to `rocket` (version `0.5.0-rc2` or higher) if not already present:
+//! You should also add a dependency to `rocket` (version `0.5.0` or higher) if not already present:
 //! ```
 //! [dependencies]
-//! rocket = "0.5.0-rc.2"
-//! rocket_modules = "0.1.0"
+//! rocket = "0.5.0"
+//! rocket_modules = "0.1.2"
 //! ```
 
 #[macro_use]
 extern crate syn;
 
 use proc_macro::TokenStream;
-use quote::{quote};
-use syn::{ExprMethodCall, ItemMod, Item::Fn, ItemFn, Item, ExprArray, Path};
-use syn::Expr::MethodCall;
+use quote::quote;
 use syn::punctuated::Punctuated;
+use syn::Expr::MethodCall;
+use syn::{ExprArray, ExprMethodCall, Item, Item::Fn, ItemFn, ItemMod, Path};
 
 /// Generates a [`Vec<rocket::Route>`](rocket::Route) which contains all functions marked with a [rocket route attribute](rocket::get). The module has to be marked with [`#[route_module]`](macro@route_module).
 ///
@@ -110,8 +110,16 @@ pub fn route_module(_metadata: TokenStream, input: TokenStream) -> TokenStream {
     let content = module.content
         .expect("Currently, only modules which declare their content in-place ('mod my_module { ... }') are supported!");
 
-    let routes = content.1.iter()
-        .filter_map(|item| if let Fn(func) = item { Some(func) } else { None })
+    let routes = content
+        .1
+        .iter()
+        .filter_map(|item| {
+            if let Fn(func) = item {
+                Some(func)
+            } else {
+                None
+            }
+        })
         .filter(|&func| is_rocket_route(func))
         .map(|route| route.sig.ident.clone())
         .collect::<Vec<_>>();
@@ -150,22 +158,15 @@ pub fn route_module(_metadata: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 fn is_rocket_route(func: &ItemFn) -> bool {
-    func.attrs
-        .iter()
-        .any(|attr|
-            attr.path.segments.iter()
-            .any(|s|
-                ROCKET_ROUTE_KEYWORDS.iter()
-                .any(|&keyword| s.ident == keyword)))
+    func.attrs.iter().any(|attr| {
+        attr.path.segments.iter().any(|s| {
+            ROCKET_ROUTE_KEYWORDS
+                .iter()
+                .any(|&keyword| s.ident == keyword)
+        })
+    })
 }
 
 const ROCKET_ROUTE_KEYWORDS: [&str; 8] = [
-    "route",
-    "get",
-    "post",
-    "put",
-    "delete",
-    "head",
-    "patch",
-    "options"
+    "route", "get", "post", "put", "delete", "head", "patch", "options",
 ];
