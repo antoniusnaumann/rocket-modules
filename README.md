@@ -47,14 +47,14 @@ fn rocket() -> _ {
 ## Installation
 To install `rocket_modules`, add it to your dependencies in your `Cargo.toml`.
 
-You should also add a dependency to `rocket` (version `0.5.0-rc2` or higher) if not already present:
+You should also add a dependency to `rocket` (version `0.5.0` or higher) if not already present:
 ```TOML
 [dependencies]
-rocket = "0.5.0-rc.2"
-rocket_modules = "0.1.0"
+rocket = "0.5.0"
+rocket_modules = "0.1.2"
 ```
 
-*Note: Compatability of this crate was tested with Rocket version "0.5.0-rc.2", it may or may not work with previous versions.*
+*Note: Compatability of this crate was tested with Rocket version "0.5.0", it may or may not work with previous versions.*
 
 ## License
 This code is dual-licensed and availabe under MIT-License or Apache 2.0-License depending on what suits your needs best.
